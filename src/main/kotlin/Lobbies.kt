@@ -23,6 +23,7 @@ data class Lobby(
     val id: String,
     val users: MutableList<User> = mutableListOf(),
     var inGame: Boolean = false,
+    var firstRound: Boolean = true
 ) {
     operator fun plusAssign(user: User) {
         user.lobbyId = id

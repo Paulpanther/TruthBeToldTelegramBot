@@ -1,6 +1,7 @@
 object LobbySystem {
     fun createLobby(msg: TMessage) {
         val newLobby = Lobbies.createLobby()
+        newLobby += msg.user
         msg.user.sendMessage("New Lobby created. Forward the following message to your friends")
         msg.user.sendMessage("t.me/truth_be_told_bot?start=${newLobby.id}")
     }
@@ -8,7 +9,7 @@ object LobbySystem {
     fun joinLobbyOrStart(msg: TMessage) {
         val user = msg.user
         val text = msg.text ?: return user.sendMessage("I could not read this")
-        val lobbyId = text.removePrefix("/start ")
+        val lobbyId = text.removePrefix("/start").trim()
         if (lobbyId.isEmpty()) {
             user.sendMessage("Hello ${user.name}. Send /create_lobby to create a new Lobby")
         } else {
@@ -17,7 +18,11 @@ object LobbySystem {
                 return user.sendMessage("Cannot join Lobby in which you already are")
             }
             lobby.sendMessage("User ${user.name} joined your Lobby")
-            user.sendMessage("Successfully joined Lobby. Other players are ${ConversationUtils.concatenate(lobby.users.map { it.name })}")
+            if (lobby.users.isEmpty()) {
+                user.sendMessage("Successfully joined Lobby")
+            } else {
+                user.sendMessage("Successfully joined Lobby. Other players are: ${ConversationUtils.concatenate(lobby.users.map { it.name })}")
+            }
             lobby += user
         }
     }

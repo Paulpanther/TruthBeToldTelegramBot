@@ -18,6 +18,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
     implementation("com.github.kittinunf.fuel:fuel-gson:2.3.1")
+    testImplementation("io.kotest:kotest-runner-junit5:5.0.2")
 }
 
 tasks.withType<KotlinCompile> {
@@ -32,4 +33,8 @@ project.setProperty("mainClassName", "AppKt")
 
 tasks.withType<ShadowJar> {
     archiveFileName.set("app.jar")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

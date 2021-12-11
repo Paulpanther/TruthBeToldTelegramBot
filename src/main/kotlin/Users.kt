@@ -4,11 +4,17 @@ enum class Role {
     Explainer
 }
 
+object Users {
+    private val users = mutableListOf<User>()
+    operator fun get(chat: TChat) = users.find { it.id == chat.id } ?: User(chat).also { users += it }
+}
+
 class User(val chat: TChat) {
 
     var lobbyId: String? = null
     var role: Role? = null
     var ready = false
+    var articleName: String? = null
 
     val id = chat.id
 
@@ -26,13 +32,14 @@ class User(val chat: TChat) {
     }
 
     fun sendMessage(text: String) {
-        Bot.sendMessage(id, text)
+        bot.sendMessage(id, text)
     }
 
     fun exitLobby() {
         lobbyId = null
         role = null
         ready = false
+        articleName = null
     }
 
     override fun equals(other: Any?) = other is User && other.id == id
@@ -43,4 +50,4 @@ fun List<User>.sendMessage(text: String) {
     forEach { it.sendMessage(text) }
 }
 
-val TMessage.user get() = User(chat)
+val TMessage.user get() = Users[chat]

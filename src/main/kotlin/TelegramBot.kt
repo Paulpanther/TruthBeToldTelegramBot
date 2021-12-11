@@ -7,33 +7,38 @@ import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
 
-object Bot {
+
+interface AbstractBot {
+    fun getChat(chatId: Long): TChat?
+    fun setMyCommands(commands: List<TBotCommand>): Boolean
+    fun sendMessage(chatId: Long, text: String): TMessage?
+    fun getUpdates(offset: Long? = null, limit: Int? = null): List<TUpdate>?
+}
+
+class Bot: AbstractBot {
     private val token = System.getenv("TELEGRAM_TOKEN") ?: error("TELEGRAM_TOKEN not set")
     private val base = "https://api.telegram.org/bot$token/"
-    const val botName = "truth_be_told_bot"
-
     private val gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
 
-
-    fun getChat(chatId: Long): TChat? {
+    override fun getChat(chatId: Long): TChat? {
         val req = Fuel.post(base + "getChat", listOf("chat_id" to chatId))
         val (_, res, result) = req.responseObject<TResponse<TChat>>(gson)
         return validate(res, result)
     }
 
-    fun setMyCommands(commands: List<TBotCommand>): Boolean {
+    override fun setMyCommands(commands: List<TBotCommand>): Boolean {
         val req = Fuel.post(base + "setMyCommands", listOf("commands" to commands))
         val (_, res, result) = req.responseObject<TResponse<Boolean>>(gson)
         return validate(res, result) ?: false
     }
 
-    fun sendMessage(chatId: Long, text: String): TMessage? {
+    override fun sendMessage(chatId: Long, text: String): TMessage? {
         val req = Fuel.post(base + "sendMessage", listOf("chat_id" to chatId, "text" to text))
         val (_, res, result) = req.responseObject<TResponse<TMessage>>(gson)
         return validate(res, result)
     }
 
-    fun getUpdates(offset: Long? = null, limit: Int? = null): List<TUpdate>? {
+    override fun getUpdates(offset: Long?, limit: Int?): List<TUpdate>? {
         val req = Fuel.post(base + "getUpdates", listOf("offset" to offset, "limit" to limit))
         val (_, res, result) = req.responseObject<TResponse<List<TUpdate>>>(gson)
         return validate(res, result)
@@ -52,6 +57,8 @@ object Bot {
         return data.result
     }
 }
+
+lateinit var bot: AbstractBot
 
 data class TResponse<T>(
     val ok: Boolean,
@@ -101,7 +108,9 @@ data class TUser(
     val firstName: String,
     val lastName: String?,
     val username: String?
-)
+) {
+    fun toChat() = TChat(id, firstName, lastName, username)
+}
 
 data class TChat(
     val id: Long,

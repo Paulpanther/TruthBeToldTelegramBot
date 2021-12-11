@@ -1,6 +1,3 @@
-import java.util.*
-import kotlin.concurrent.schedule
-
 object GameSystem {
     fun startGame(lobby: Lobby) {
         assignArticles(lobby)
@@ -41,14 +38,26 @@ object GameSystem {
         if (user.ready) return user.sendMessage("You already are ready")
         user.ready = true
 
-        if (lobby.ready) {
+        if (lobby.firstRound && lobby.ready) {
             lobby.sendMessage("All players are ready. Assigning roles now")
             assignRandomRoles(lobby)
-            lobby.sendMessage("The Listener can now begin to ask questions")
+            startRound(lobby)
+        } else if (lobby.firstRound) {
+            user.sendMessage("You are ready now")
+            lobby.users.without(user).sendMessage("${user.name} is ready")
         } else {
             user.sendMessage("You are ready now")
             lobby.users.without(user).sendMessage("${user.name} is ready")
+            lobby.sendMessage("Starting next Round")
+            startRound(lobby)
         }
+    }
+
+    private fun startRound(lobby: Lobby) {
+        val explainerArticle = lobby.explainer?.articleName ?: return lobby.sendMessage("Could not get Explainer Article")
+        lobby.sendMessage("The Article is: $explainerArticle")
+        lobby.sendMessage("The Listener can now begin to ask questions")
+        lobby.firstRound = false
     }
 
     private fun assignArticles(lobby: Lobby) {
@@ -61,6 +70,7 @@ object GameSystem {
     }
 
     private fun sendWikiPage(user: User, page: WPage) {
+        user.articleName = page.title
         user.sendMessage("You have been assigned the Article \"${page.title}\": ${page.url}. Please send /ready once you finished reading it")
     }
 

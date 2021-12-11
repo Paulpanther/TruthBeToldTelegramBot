@@ -2,20 +2,22 @@ data class CommandListener(val command: String, val description: String, val act
 data class ElseListener(val action: (msg: TMessage) -> Unit)
 
 class CommandHandler(
-    listeners: List<CommandListener>,
-    elseListener: ElseListener
+    private val listeners: List<CommandListener>,
+    private val elseListener: ElseListener
 ) {
+    var running = true
+    var sleepTime = 1000L
 
-    init {
-        if (!Bot.setMyCommands(listeners.map { TBotCommand(it.command, it.description) })) {
+    fun start() {
+        if (!bot.setMyCommands(listeners.map { TBotCommand(it.command, it.description) })) {
             error("Could not set commands")
         }
 
         var nextUpdate: Long? = null
-        while (true) {
-            Thread.sleep(1000)
+        while (running) {
+            Thread.sleep(sleepTime)
 
-            val updates = Bot.getUpdates(nextUpdate) ?: continue
+            val updates = bot.getUpdates(nextUpdate) ?: continue
             for (update in updates) {
                 val msg = update.message ?: continue
                 val entity = msg.entities?.firstOrNull()

@@ -1,5 +1,10 @@
 fun main() {
-    CommandHandler(
+    bot = Bot()
+    App.registerCommands().start()
+}
+
+object App {
+    fun registerCommands() = CommandHandler(
         listOf(
             CommandListener("create_lobby", "Creates a new Lobby", LobbySystem::createLobby),
             CommandListener("start_game", "Starts game in the current Lobby", LobbySystem::startGame),
