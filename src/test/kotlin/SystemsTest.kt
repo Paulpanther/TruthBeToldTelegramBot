@@ -65,7 +65,7 @@ class SystemsTest: FunSpec({
 
         val u1 = TUser(0, "Tom", "Scott", "@tomscott")
         val u2 = TUser(1, "Michael", "Bay", "@michaelbay")
-        val u3 = TUser(2, "Tony", "Stark", "@tonystark")
+        val u3 = TUser(2, "Tony", "Stark", "@tonystark", "de")
 
         testBot._getChat = { id -> listOf(u1, u2, u3).find { it.id == id }?.toChat() }
 
@@ -93,12 +93,12 @@ class SystemsTest: FunSpec({
             }, {
                 testBot.popMessageBy(u1) shouldBe "User Tony joined your Lobby"
                 testBot.popMessageBy(u2) shouldBe "User Tony joined your Lobby"
-                testBot.popMessageBy(u3) shouldBe "Successfully joined Lobby. Other players are: Tom and Michael"
+                testBot.popMessageBy(u3) shouldBe "Lobby erfolgreich beigetreten. Die anderen Spieler sind: Tom und Michael"
                 testBot.addCommandMessageUpdate(u1, "/start_game")
             }, {
                 testBot.popMessageBy(u1) shouldBe "Starting Game!"
                 testBot.popMessageBy(u2) shouldBe "Starting Game!"
-                testBot.popMessageBy(u3) shouldBe "Starting Game!"
+                testBot.popMessageBy(u3) shouldBe "Spiel gestartet!"
                 testBot.popMessageBy(u1)?.startsWith("You have been assigned the Article") shouldBe true
                 testBot.clearMessages()
                 testBot.addCommandMessageUpdate(u1, "/ready")
