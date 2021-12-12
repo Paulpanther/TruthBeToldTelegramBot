@@ -6,33 +6,27 @@ enum class Role {
 
 object Users {
     private val users = mutableListOf<User>()
-    operator fun get(chat: TChat) = users.find { it.id == chat.id } ?: User(chat).also { users += it }
+    operator fun get(tUser: TUser) = users.find { it.id == tUser.id } ?: User(tUser).also { users += it }
 }
 
-class User(val chat: TChat) {
+class User(val tUser: TUser) {
 
     var lobbyId: String? = null
     var role: Role? = null
     var ready = false
     var articleName: String? = null
 
-    val id = chat.id
+    val id = tUser.id
 
-    val name by lazy {
-        when {
-            chat.firstName != null -> chat.firstName
-            chat.username != null -> chat.username
-            else -> "Anonymous User"
-        }
-    }
+    val name  = tUser.firstName
 
     val lobby get(): Lobby? {
-        val lobbyId = lobbyId ?: return nullAndDo { sendMessage("You have to create a lobby first") }
-        return Lobbies[lobbyId] ?: return nullAndDo { sendMessage("Your lobby is no longer active") }
+        val lobbyId = lobbyId ?: return nullAndDo { sendTranslatedMessage("errorUserNotInLobby") }
+        return Lobbies[lobbyId] ?: return nullAndDo { sendTranslatedMessage("errorLobbyNotActive") }
     }
 
-    fun sendMessage(text: String) {
-        bot.sendMessage(id, text)
+    fun sendTranslatedMessage(key: String, vararg params: String) {
+        bot.sendTranslatedMessage(tUser, key, *params)
     }
 
     fun exitLobby() {
@@ -46,8 +40,12 @@ class User(val chat: TChat) {
     override fun hashCode() = id.hashCode()
 }
 
-fun List<User>.sendMessage(text: String) {
-    forEach { it.sendMessage(text) }
+fun List<User>.sendTranslatedMessage(key: String, vararg params: String) {
+    forEach { it.sendTranslatedMessage(key, *params) }
 }
 
-val TMessage.user get() = Users[chat]
+fun List<User>.sendTranslatedMessage(builder: (User) -> String) {
+    forEach { u -> u.sendTranslatedMessage(builder(u)) }
+}
+
+val TMessage.user get() = Users[from ?: error("Invalid User")]

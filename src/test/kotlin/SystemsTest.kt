@@ -15,6 +15,11 @@ private class TestBot: AbstractBot {
     override fun getChat(chatId: Long) = _getChat(chatId)
     override fun setMyCommands(commands: List<TBotCommand>) = _setMyCommands(commands)
 
+    override fun sendTranslatedMessage(user: TUser, key: String, vararg params: String): TMessage? {
+        val text = T(user.languageCode, key, *params)
+        return sendMessage(user.id, text)
+    }
+
     override fun getUpdates(offset: Long?, limit: Int?): List<TUpdate> {
         beforeUpdate.removeFirst()()
 

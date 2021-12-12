@@ -11,6 +11,7 @@ import com.google.gson.annotations.SerializedName
 interface AbstractBot {
     fun getChat(chatId: Long): TChat?
     fun setMyCommands(commands: List<TBotCommand>): Boolean
+    fun sendTranslatedMessage(user: TUser, key: String, vararg params: String): TMessage?
     fun sendMessage(chatId: Long, text: String): TMessage?
     fun getUpdates(offset: Long? = null, limit: Int? = null): List<TUpdate>?
 }
@@ -30,6 +31,11 @@ class Bot: AbstractBot {
         val req = Fuel.post(base + "setMyCommands", listOf("commands" to commands))
         val (_, res, result) = req.responseObject<TResponse<Boolean>>(gson)
         return validate(res, result) ?: false
+    }
+
+    override fun sendTranslatedMessage(user: TUser, key: String, vararg params: String): TMessage? {
+        val text = T(user.languageCode, key, *params)
+        return sendMessage(user.id, text)
     }
 
     override fun sendMessage(chatId: Long, text: String): TMessage? {
@@ -107,7 +113,8 @@ data class TUser(
     val id: Long,
     val firstName: String,
     val lastName: String?,
-    val username: String?
+    val username: String?,
+    val languageCode: String = "en"
 ) {
     fun toChat() = TChat(id, firstName, lastName, username)
 }

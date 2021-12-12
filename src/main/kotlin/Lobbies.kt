@@ -30,12 +30,16 @@ data class Lobby(
         users += user
     }
 
-    fun sendMessage(text: String) {
-        users.sendMessage(text)
+    fun sendTranslatedMessage(key: String, vararg params: String) {
+        users.sendTranslatedMessage(key, *params)
     }
 
-    val listener get() = users.find { it.role == Role.Listener }
-    val explainer get() = users.find { it.role == Role.Explainer }
+    fun sendTranslatedMessage(builder: (User) -> String) {
+        users.forEach { u -> u.sendTranslatedMessage(builder(u)) }
+    }
+
+    val listener get() = users.find { it.role == Role.Listener } ?: error("No Listener found")
+    val explainer get() = users.find { it.role == Role.Explainer } ?: error("No Explainer found")
     val liars get() = users.filter { it.role == Role.Liar }
 
     val ready get() = users.all { it.ready }
